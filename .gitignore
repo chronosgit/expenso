@@ -1,3 +1,4 @@
 .output
 target
 tomcat.8081
+src/main/resources/config.properties

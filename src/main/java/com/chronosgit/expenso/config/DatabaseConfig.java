@@ -1,8 +1,12 @@
 package com.chronosgit.expenso.config;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Properties;
 
+import com.chronosgit.expenso.Main;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -11,12 +15,28 @@ public class DatabaseConfig {
 
     static {
         HikariConfig cfg = new HikariConfig();
-        cfg.setJdbcUrl(System.getProperty("DB_URL"));
-        cfg.setUsername(System.getProperty("DB_USER"));
-        cfg.setPassword(System.getProperty("DB_PASSWORD"));
-        cfg.setMaximumPoolSize(10);
-        cfg.setIdleTimeout(60000);
-        cfg.setMinimumIdle(2);
+
+        // cfg.setJdbcUrl(System.getenv("DB_URL"));
+        // cfg.setUsername(System.getenv("DB_USER"));
+        // cfg.setPassword(System.getenv("DB_PASSWORD"));
+
+        Properties props = new Properties();
+
+        try (InputStream input = Main.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (input == null) {
+                throw new IllegalStateException("Failed to read config.properties");
+            }
+            props.load(input);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load properties", e);
+        }
+
+        cfg.setJdbcUrl(props.getProperty("db.url"));
+        cfg.setUsername(props.getProperty("db.user"));
+        cfg.setPassword(props.getProperty("db.password"));
+        cfg.setMaximumPoolSize(Integer.parseInt(props.getProperty("db.pool.maximumPoolSize")));
+        cfg.setMinimumIdle(Integer.parseInt(props.getProperty("db.pool.minimumIdle")));
+        cfg.setIdleTimeout(Integer.parseInt(props.getProperty("db.pool.idleTimeout")));
 
         dataSource = new HikariDataSource(cfg);
     }

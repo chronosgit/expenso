@@ -23,6 +23,17 @@ public class Main {
 
             ThreadExceptionHandler.handleUncaughtExceptions();
 
+            try (Connection conn = DatabaseConfig.getConnection()) {
+                logger.info(MarkerConfig.DB, "Database and Hikari pool are working");
+            } catch (SQLException e) {
+                logger.error(
+                        MarkerConfig.ERROR,
+                        "Failed to connect to the DB",
+                        e);
+
+                System.exit(1);
+            }
+
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 logger.info(
                         MarkerConfig.SHUTDOWN,
@@ -32,20 +43,13 @@ public class Main {
                     tc.stop();
                     tc.destroy();
                 } catch (LifecycleException ex) {
-                    ex.printStackTrace();
+                    logger.error(
+                            MarkerConfig.ERROR,
+                            "Failed to clean Tomcat");
                 }
+
+                DatabaseConfig.closeDataSource();
             }));
-
-            try (Connection conn = DatabaseConfig.getConnection()) {
-                logger.info(MarkerConfig.DB, "Database connection is opened");
-            } catch (SQLException e) {
-                logger.error(
-                        MarkerConfig.ERROR,
-                        "Failed to connect to the DB",
-                        e);
-
-                System.exit(1);
-            }
 
             try {
                 tc.start();
