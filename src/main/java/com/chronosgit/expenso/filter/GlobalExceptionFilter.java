@@ -23,10 +23,10 @@ public class GlobalExceptionFilter implements Filter {
         try {
             chain.doFilter(req, res);
         } catch (Exception e) {
-            Logger l = LoggerFactory.getLogger(GlobalExceptionFilter.class);
+            Logger logger = LoggerFactory.getLogger(GlobalExceptionFilter.class);
 
             String msg = e.getMessage() != null ? e.getMessage() : "Internal server error";
-            l.error(MarkerConfig.ERROR, msg, e);
+            logger.error(MarkerConfig.ERROR, msg, e);
 
             res.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             String json = String.format("{\"error\":\"%s\"}", "Internal server");
